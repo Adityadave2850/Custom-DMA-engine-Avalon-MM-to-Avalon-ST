@@ -1,0 +1,43 @@
+# Quartus Prime temporary and generated files
+db/
+incremental_db/
+output_files/
+simulation/
+timing/
+greybox_tmp/
+*.qws
+*.rpt
+*.smsg
+*.summary
+*.done
+*.jdi
+*.pin
+*.qdf
+*.sld
+*.sof
+*.pof
+*.jam
+*.jbc
+*.ekp
+*.bsf
+*.cmp
+
+# Platform Designer (Qsys) generated files
+.qsys_edit/
+*_tb/
+*/synthesis/
+*/simulation/
+*.sopcinfo
+*.html
+*.xml
+
+# ModelSim / Simulation files
+work/
+transcript
+*.wlf
+*.vcd
+modelsim.ini
+
+# OS generated files
+.DS_Store
+Thumbs.db
