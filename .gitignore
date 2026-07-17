@@ -1,0 +1,6 @@
+# Icarus Verilog compiled binaries
+*.out
+*.vvp
+
+# Optional: uncomment if you don't want waveform dumps in the repo
+# *.vcd

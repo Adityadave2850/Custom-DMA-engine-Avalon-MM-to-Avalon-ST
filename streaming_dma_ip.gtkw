@@ -1,0 +1,34 @@
+[*]
+[*] GTKWave Analyzer save file
+[dumpfile] "streaming_dma_ip.vcd"
+[timestart] 0
+[size] 1400 800
+*-13.000000 1000000000 0
+[sst_width] 200
+[signals_width] 260
+[sidebar_width] 200
+@28
+tb_streaming_dma_ip.clk
+tb_streaming_dma_ip.reset_n
+#{Avalon-MM Master<->Slave}
+@28
+tb_streaming_dma_ip.dbg_amm_address[7:0]
+@22
+tb_streaming_dma_ip.dbg_amm_read
+tb_streaming_dma_ip.dbg_amm_waitrequest
+@28
+tb_streaming_dma_ip.dbg_amm_readdata[31:0]
+@22
+tb_streaming_dma_ip.dbg_amm_readdatavalid
+#{Avalon-ST Source<->Sink}
+@28
+tb_streaming_dma_ip.dbg_stream_data[7:0]
+@22
+tb_streaming_dma_ip.dbg_stream_valid
+tb_streaming_dma_ip.dbg_stream_ready
+#{Output / Debug}
+@28
+tb_streaming_dma_ip.led_output[7:0]
+tb_streaming_dma_ip.dbg_xfer_count[15:0]
+[pattern_trace] 1
+[pattern_trace] 0
