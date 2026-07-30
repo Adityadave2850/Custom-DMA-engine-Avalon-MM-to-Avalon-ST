@@ -49,6 +49,33 @@ module avalon_onchip_mem #(
             mem[i] = {8'hA5, 8'h5A, 8'hA5, init_byte};
         end
     end
+    /* ==============================================================================
+     * MEMORY INITIALIZATION PATTERN (Diagnostic & Bus Testing)
+     * ==============================================================================
+     * This block pre-loads the memory with a highly deliberate diagnostic pattern
+     * rather than leaving it uninitialized ('X') or zeroed out.
+     *
+     * 1. The Sentinel Bytes: {8'hA5, 8'h5A, 8'hA5}
+     * - Binary A5 = 10100101
+     * - Binary 5A = 01011010
+     * These hex values are exact bitwise inverses. Stringing them together on a 
+     * 32-bit data bus forces nearly every bit line to flip simultaneously. 
+     * This acts as a classic hardware stress-test (checking for short-circuits 
+     * or voltage droop) and easily exposes bit-shift errors that a standard 
+     * 0xAA/0x55 checkerboard might hide. It also creates a highly recognizable 
+     * visual signature in waveform viewers like GTKWave.
+     *
+     * 2. The Address-Dependent Byte: init_byte = (i * 2 + 1) & 8'hFF
+     * - The lowest 8 bits are mathematically tied to the memory index (i).
+     * - This guarantees every word is unique, allowing the testbench to verify 
+     * addressing logic (e.g., ensuring address 4 doesn't accidentally read 
+     * the data from address 0).
+     * - Why "& 8'hFF"? In Verilog, 'i' is a 32-bit integer, so (i * 2 + 1) 
+     * produces a 32-bit result. When writing this to the 8-bit 'init_byte', 
+     * strict simulators (and synthesis tools) will throw truncation warnings. 
+     * The bitwise AND explicitly masks out the upper 24 bits, safely isolating 
+     * the lower 8 bits and telling the compiler this truncation is intentional.
+     * ============================================================================== */
 
     // ---------------------------------------------------------------
     // Stall generator: forces the master to see a real, non-zero-latency
