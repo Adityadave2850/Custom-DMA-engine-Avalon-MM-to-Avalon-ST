@@ -56,23 +56,23 @@ for the exact fix in each file).
 
 ```
                     ┌────────────────────────── streaming_dma_ip.v ───────────────────────────┐
-                    │                                                                          │
-                    │   avalon_onchip_mem.v          Avalon-MM           dma_engine.v          │
-                    │   ┌──────────────────┐    ◄──────────────────►   ┌──────────────────┐    │
-                    │   │  Avalon-MM SLAVE  │    address/read/          │ Avalon-MM MASTER  │    │
-                    │   │  (block RAM,       │    readdata/              │  (read only)      │    │
-                    │   │   replaces Qsys    │    readdatavalid/          │       +           │    │
-                    │   │   mem_system)      │    waitrequest             │ Avalon-ST SOURCE  │    │
-                    │   └──────────────────┘                            └────────┬─────────┘    │
-                    │                                                            │ Avalon-ST     │
-                    │                                                            │ data/valid/   │
-                    │                                                            │ ready         │
-                    │                                                            ▼               │
-                    │                                                 avalon_consumer.v           │
-                    │                                                 (Avalon-ST SINK, drives     │
-                    │                                                  led_output)                │
-                    │                                                                          │
-                    └──────────────────────────────────────────────────────────────────────────┘
+                    │                                                                         │
+                    │   avalon_onchip_mem.v          Avalon-MM           dma_engine.v         │
+                    │   ┌──────────────────┐    ◄──────────────────►   ┌──────────────────┐   │
+                    │   │  Avalon-MM SLAVE │    address/read/          │ Avalon-MM MASTER │   |
+                    │   │  (block RAM,     │    readdata/              │  (read only)     │   │
+                    │   │   replaces Qsys  │    readdatavalid/         │       +          │   │
+                    │   │   mem_system)    │    waitrequest            │ Avalon-ST SOURCE │   │
+                    │   └──────────────────┘                           └────────┬─────────┘   │
+                    │                                                           │ Avalon-ST   │
+                    │                                                           │ data/valid/ │
+                    │                                                           │ ready       │
+                    │                                                           ▼             │
+                    │                                                 avalon_consumer.v       │
+                    │                                                 (Avalon-ST SINK, drives │
+                    │                                                  led_output)            │
+                    │                                                                         │
+                    └─────────────────────────────────────────────────────────────────────────┘
                                                              │
                                                         led_output[7:0]
 ```
