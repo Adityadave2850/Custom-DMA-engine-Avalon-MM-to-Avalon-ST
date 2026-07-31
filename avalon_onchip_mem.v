@@ -108,10 +108,86 @@ module avalon_onchip_mem #(
     // ---------------------------------------------------------------
     // Fixed-latency read pipeline
     // ---------------------------------------------------------------
+    /*
+ Stall generator (behavior & intent)
+
+ - Signals:
+   - reg [15:0] stall_ctr;  // counts read cycles
+   - reg        stalling;   // drives waitrequest for exactly one cycle
+   - assign waitrequest = stalling;
+
+ - Reset:
+   - On !reset_n both stall_ctr and stalling are cleared (no stalls after reset).
+
+ - STALL_PERIOD semantics:
+   - If STALL_PERIOD == 0, the whole periodic-stall logic is disabled (no artificial stalls).
+   - Otherwise, the logic increments stall_ctr on every cycle when 'read' is asserted.
+   - When stall_ctr reaches (STALL_PERIOD - 1) and a 'read' occurs, stalling <= 1 is set
+     and stall_ctr is reset to 0. The stalling flag is cleared on the next clock edge,
+     so waitrequest is asserted for exactly one clock cycle.
+
+ - Practical effects / examples:
+   - STALL_PERIOD = 5 -> a single-cycle waitrequest pulse after 5 read cycles.
+   - STALL_PERIOD = 1 -> waitrequest asserted every read cycle (one-cycle stall per read).
+   - STALL_PERIOD = 0 -> never stall (stalls disabled).
+
+ - Notes:
+   - The counter only advances while 'read' is asserted; idle cycles do not advance it.
+   - Because waitrequest is asserted for one cycle, the master will see that read as not
+     accepted for that cycle (accept is read && !waitrequest).
+   - This block is intended to emulate a non-ideal slave so masters that assume an
+     always-ready slave are exercised in simulation.
+*/
     wire accept = read && !waitrequest;
 
     reg [DATA_WIDTH-1:0] data_pipe  [0:LATENCY-1];
     reg                  valid_pipe [0:LATENCY-1];
+
+    /*
+ Fixed-latency read pipeline (behavior & intent)
+
+ - accept:
+   - wire accept = read && !waitrequest;
+   - 'accept' is true when the master requests a read and the slave is NOT stalling.
+     This marks a read that the slave actually accepts this cycle.
+
+ - Pipeline storage:
+   - reg [DATA_WIDTH-1:0] data_pipe  [0:LATENCY-1];
+   - reg                  valid_pipe [0:LATENCY-1];
+   - data_pipe holds the sampled data for each stage.
+   - valid_pipe holds a 1-bit flag indicating whether the corresponding data was
+     produced by an accepted read (so consumers can ignore samples from non-accepted reads).
+
+ - Reset/init:
+   - On !reset_n all data_pipe entries and valid_pipe flags are cleared, and the
+     outputs readdata and readdatavalid are cleared to avoid spurious valid pulses.
+
+ - Normal operation:
+   - data_pipe[0]  <= mem[address[WORD_BITS+1:2]];
+     - The memory word is sampled every cycle using the word index derived from the
+       byte address: address[WORD_BITS+1:2] (drops the two LSBs for 4-byte words).
+   - valid_pipe[0] <= accept;
+     - The stage-0 valid is asserted only when the read was accepted this cycle.
+   - For j = 1..LATENCY-1:
+       data_pipe[j]  <= data_pipe[j-1];
+       valid_pipe[j] <= valid_pipe[j-1];
+     - Data and valid bits shift down the pipeline each cycle.
+   - readdata      <= data_pipe[LATENCY-1];
+     readdatavalid <= valid_pipe[LATENCY-1];
+     - The outputs reflect the last pipeline stage, so an accepted read at cycle t
+       produces valid readdata at cycle t + LATENCY (deterministic fixed latency).
+
+ - Important notes / gotchas:
+   - The memory is sampled into data_pipe[0] every cycle regardless of 'accept', but
+     valid_pipe ensures only accepted reads propagate as valid output.
+   - The pipeline enforces a deterministic latency equal to LATENCY cycles from
+     accept -> readdatavalid.
+   - If the stall-generator prevents accept (waitrequest asserted), valid_pipe[0] is 0
+     that cycle and no new valid entry enters the pipeline; existing entries continue
+     shifting toward the output.
+   - The address indexing uses WORD_BITS to select the correct word from a byte address:
+     address[WORD_BITS+1:2] converts a byte address into a word index for 32-bit words.
+*/
 
     integer j;
     always @(posedge clk or negedge reset_n) begin
