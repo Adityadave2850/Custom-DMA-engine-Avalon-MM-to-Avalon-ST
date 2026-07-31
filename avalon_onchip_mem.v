@@ -88,15 +88,16 @@ module avalon_onchip_mem #(
 
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
-            stall_ctr <= 16'd0;
+            stall_ctr <= 16'd0;                  
             stalling  <= 1'b0;
         end else if (STALL_PERIOD != 0) begin
-            if (stalling) begin
+            if (stalling) begin                  // if the stalling s high, meanin gwaitrequest is high, so no read possible,
+                                                //make sure that such stalls are only one clock cycle long
                 stalling <= 1'b0;               // release after exactly 1 cycle
             end else if (read) begin
                 if (stall_ctr == STALL_PERIOD - 1) begin
-                    stalling  <= 1'b1;
-                    stall_ctr <= 16'd0;
+                    stalling  <= 1'b1;                // after a certain number of normal bits have been sent = stall_ctr -1
+                    stall_ctr <= 16'd0;               //the 1 clock cycke stall is injected and  stalling counter is reset
                 end else begin
                     stall_ctr <= stall_ctr + 16'd1;
                 end
