@@ -102,8 +102,8 @@ module dma_engine #(
                 // source and wait for the sink to accept it.
                 WRITE: begin
                     aso_data  <= captured_data[7:0];
-                    aso_valid <= 1'b1;
-
+                    aso_valid <= 1'b1;                   // a counter mechanism can be added to send all 4 bytes of the avalon mm word to 
+                                                         // the avalon st interface
                     if (aso_valid && aso_ready) begin
                         aso_valid <= 1'b0;
 
